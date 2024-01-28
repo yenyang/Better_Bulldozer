@@ -27,7 +27,7 @@ namespace Better_Bulldozer.Settings
             {
                 { "YY_BETTER_BULLDOZER.ToolMode", "Tool Mode" },
                 { "YY_BETTER_BULLDOZER.RaycastSurfacesButton", "Target Surfaces" },
-                { "YY_BETTER_BULLDOZER_DESCRIPTION.RaycastSurfacesButton", "Makes the bulldozer EXCLUSIVELY target surfaces inside or outside of buildings so you can remove them in one click. You must turn this off to bulldoze anything else." },
+                { "YY_BETTER_BULLDOZER_DESCRIPTION.RaycastSurfacesButton", "Makes the bulldozer EXCLUSIVELY target surfaces and spaces inside or outside of buildings so you can remove them in one click. You must turn this off to bulldoze anything else." },
                 { "YY_BETTER_BULLDOZER.RaycastMarkersButton", "Target Markers" },
                 { "YY_BETTER_BULLDOZER_DESCRIPTION.RaycastMarkersButton", "Shows and EXCLUSIVELY targets markers and invisible roads. With this enabled you can demolish invisible networks, invisible parking decals, various spots, points, and spawners, but SAVE FIRST! You cannot demolish these within buildings." },
                 { "YY_BETTER_BULLDOZER.GameplayManipulationButton", "Gameplay Manipulation" },
