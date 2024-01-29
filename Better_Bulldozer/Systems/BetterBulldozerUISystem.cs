@@ -36,11 +36,12 @@ namespace Better_Bulldozer.Systems
         private BulldozeToolSystem m_BulldozeToolSystem;
         private bool m_LastGamePlayManipulation;
         private bool m_LastBypassConfrimation;
-        private bool m_LastShowMarkers;
+        private bool m_RecordedShowMarkers;
         private bool m_PrefabIsMarker = false;
         private RaycastTarget m_RaycastTarget;
         private bool m_FirstTimeLoadingJS = true;
         private bool m_DelayOneFrameForAnarchy = true;
+        private bool m_LastShowMarkers;
 
         /// <summary>
         /// An enum to handle different raycast target options.
@@ -198,6 +199,11 @@ namespace Better_Bulldozer.Systems
                 }
             }
 
+            if (m_RaycastTarget == RaycastTarget.Markers && !m_RenderingSystem.markersVisible)
+            {
+                m_RenderingSystem.markersVisible = true;
+            }
+
             base.OnUpdate();
         }
 
@@ -273,7 +279,6 @@ namespace Better_Bulldozer.Systems
         /// <param name="flag">A bool for what to set the field to.</param>
         private void RaycastMarkersButtonToggled(bool flag)
         {
-            m_RenderingSystem.markersVisible = flag;
             if (flag)
             {
                 m_RaycastTarget = RaycastTarget.Markers;
@@ -282,6 +287,7 @@ namespace Better_Bulldozer.Systems
             else
             {
                 m_RaycastTarget = RaycastTarget.Vanilla;
+                m_RenderingSystem.markersVisible = m_RecordedShowMarkers;
             }
         }
 
@@ -295,7 +301,7 @@ namespace Better_Bulldozer.Systems
             {
                 m_RaycastTarget = RaycastTarget.Surfaces;
                 m_UiView.ExecuteScript($"yyBetterBulldozer.buttonElement = document.getElementById(\"YYBB-Raycast-Markers-Button\"); if (yyBetterBulldozer.buttonElement != null) yyBetterBulldozer.buttonElement.classList.remove(\"selected\");");
-                m_RenderingSystem.markersVisible = m_LastShowMarkers;
+                m_RenderingSystem.markersVisible = m_RecordedShowMarkers;
             }
             else
             {
@@ -339,25 +345,23 @@ namespace Better_Bulldozer.Systems
             // This script creates the Anarchy object if it doesn't exist.
             UIFileUtils.ExecuteScript(m_UiView, "if (yyBetterBulldozer == null) var yyBetterBulldozer = {};");
 
-            if (m_ToolSystem.activeTool != m_BulldozeToolSystem)
+            if (tool != m_BulldozeToolSystem)
             {
-                UnshowBulldozeItem();
-                this.Enabled = false;
-
-                if (!m_LastShowMarkers || m_RaycastTarget != RaycastTarget.Markers)
+                if (m_BulldozeItemShown)
                 {
-                    m_RenderingSystem.markersVisible = false;
+                    UnshowBulldozeItem();
                 }
 
+                this.Enabled = false;
+                if (m_LastTool == m_BulldozeToolSystem.toolID && m_RaycastTarget == RaycastTarget.Markers)
+                {
+                     m_RenderingSystem.markersVisible = m_RecordedShowMarkers;
+                }
             }
             else
             {
                 this.Enabled = true;
-            }
-
-            if (tool.toolID == "Bulldoze Tool" && m_LastTool != "Bulldoze Tool")
-            {
-                m_LastShowMarkers = m_RenderingSystem.markersVisible;
+                m_RecordedShowMarkers = m_RenderingSystem.markersVisible;
                 if (m_RaycastTarget == RaycastTarget.Markers)
                 {
                     m_RenderingSystem.markersVisible = true;
