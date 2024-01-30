@@ -10,6 +10,7 @@ namespace Better_Bulldozer.Systems
     using System.IO;
     using Anarchy.Utils;
     using cohtml.Net;
+    using Colossal.Entities;
     using Colossal.Logging;
     using Game.Prefabs;
     using Game.Rendering;
@@ -41,7 +42,7 @@ namespace Better_Bulldozer.Systems
         private RaycastTarget m_RaycastTarget;
         private bool m_FirstTimeLoadingJS = true;
         private bool m_DelayOneFrameForAnarchy = true;
-        private bool m_LastShowMarkers;
+        private NetToolSystem m_NetToolSystem;
 
         /// <summary>
         /// An enum to handle different raycast target options.
@@ -79,6 +80,7 @@ namespace Better_Bulldozer.Systems
             m_BulldozeToolSystem = World.DefaultGameObjectInjectionWorld?.GetOrCreateSystemManaged<BulldozeToolSystem>();
             m_RenderingSystem = World.DefaultGameObjectInjectionWorld?.GetOrCreateSystemManaged<RenderingSystem>();
             m_PrefabSystem = World.DefaultGameObjectInjectionWorld?.GetOrCreateSystemManaged<PrefabSystem>();
+            m_NetToolSystem = World.DefaultGameObjectInjectionWorld?.GetOrCreateSystemManaged<NetToolSystem>();
             ToolSystem toolSystem = m_ToolSystem; // I don't know why vanilla game did this.
             m_ToolSystem.EventToolChanged = (Action<ToolBaseSystem>)Delegate.Combine(toolSystem.EventToolChanged, new Action<ToolBaseSystem>(OnToolChanged));
             m_BoundEventHandles = new ();
@@ -357,11 +359,54 @@ namespace Better_Bulldozer.Systems
                 {
                      m_RenderingSystem.markersVisible = m_RecordedShowMarkers;
                 }
+
+                if (tool == m_NetToolSystem && m_NetToolSystem.GetPrefab() != null)
+                {
+                    if (m_PrefabSystem.TryGetEntity(m_NetToolSystem.GetPrefab(), out Entity prefabEntity))
+                    {
+                        if (EntityManager.HasComponent<MarkerNetData>(prefabEntity))
+                        {
+                            m_PrefabIsMarker = true;
+                            m_RecordedShowMarkers = m_RenderingSystem.markersVisible;
+                        }
+                    }
+                    else
+                    {
+                        m_PrefabIsMarker = false;
+                    }
+                }
+                else
+                {
+                    m_PrefabIsMarker = false;
+                }
             }
             else
             {
                 this.Enabled = true;
-                m_RecordedShowMarkers = m_RenderingSystem.markersVisible;
+                if (m_LastTool == m_NetToolSystem.toolID && m_NetToolSystem.GetPrefab() != null)
+                {
+                    if (m_PrefabSystem.TryGetEntity(m_NetToolSystem.GetPrefab(), out Entity prefabEntity))
+                    {
+                        if (EntityManager.HasComponent<MarkerNetData>(prefabEntity))
+                        {
+                            m_PrefabIsMarker = true;
+                        }
+                    }
+                    else
+                    {
+                        m_PrefabIsMarker = false;
+                    }
+                }
+                else
+                {
+                    m_PrefabIsMarker = false;
+                }
+
+                if (!m_PrefabIsMarker || m_LastTool != m_NetToolSystem.toolID)
+                {
+                    m_RecordedShowMarkers = m_RenderingSystem.markersVisible;
+                }
+
                 if (m_RaycastTarget == RaycastTarget.Markers)
                 {
                     m_RenderingSystem.markersVisible = true;

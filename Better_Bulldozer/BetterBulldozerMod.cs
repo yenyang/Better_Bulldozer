@@ -63,7 +63,7 @@ namespace Better_Bulldozer
         /// <inheritdoc/>
         public void OnCreateWorld(UpdateSystem updateSystem)
         {
-            Logger.effectivenessLevel = Level.Debug;
+            Logger.effectivenessLevel = Level.Info;
             Logger.Info("Handling create world");
             Logger.Info("ModInstallFolder = " + ModInstallFolder);
             LoadLocales();
