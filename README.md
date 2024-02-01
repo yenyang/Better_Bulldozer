@@ -36,3 +36,5 @@ I will respond on the code modding channels on **Cities: Skylines Modding Discor
 * Algernon - Help with UI, Cooperative Development & Code Sharing
 * T.D.W., Klyte45, krzychu124, & Quboid - Cooperative Development & Code Sharing
 * Dante - Testing, Feedback
+
+This mod is not affiliated with any C:S1 mod with similar titles. 
