@@ -2,7 +2,7 @@
 <Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="..\Config\BepInEx.props" />
   <PropertyGroup>
-	<LangVersion>9</LangVersion>
+    <LangVersion>9</LangVersion>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{A9506061-6D7E-48F8-8314-105FCBF2FED8}</ProjectGuid>
@@ -31,9 +31,9 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
-	<PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'BepInEx|AnyCPU'">
-		<OutputPath>bin\BepInEx\</OutputPath>
-	</PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'BepInEx|AnyCPU'">
+    <OutputPath>bin\BepInEx\</OutputPath>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="cohtml.Net">
       <HintPath>..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\Cities Skylines II\Cities2_Data\Managed\cohtml.Net.dll</HintPath>
@@ -131,6 +131,9 @@
     <Compile Include="Utils\UIFileUtils.cs" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="BepInEx\icon.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="UI\ui.js">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
@@ -150,6 +153,11 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="BepInEx\manifest.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
