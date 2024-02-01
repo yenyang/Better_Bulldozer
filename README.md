@@ -1,7 +1,7 @@
 # Better Bulldozer
 Easily delete things with bulldozer that you otherwise could not delete or easily delete.
 
-These options used to be part of Anarchy but have been forked into this mod.
+These options used to be part of Anarchy but have been forked into this mod. This mod is intended to be used with Anarchy v1.3.0 or newer, however Anarchy is not required.
 
 Sully made a video about custom car parks (aka Parking Lots) and this functionality helped make that safe. Video on [Youtube](https://www.youtube.com/watch?v=IDzKag5WhI0&t=1s)
 ## Dependencies
