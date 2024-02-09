@@ -43,6 +43,7 @@ namespace Better_Bulldozer.Systems
         private bool m_FirstTimeLoadingJS = true;
         private bool m_DelayOneFrameForAnarchy = true;
         private NetToolSystem m_NetToolSystem;
+        private ObjectToolSystem m_ObjectToolSystem;
 
         /// <summary>
         /// An enum to handle different raycast target options.
@@ -80,6 +81,7 @@ namespace Better_Bulldozer.Systems
             m_BulldozeToolSystem = World.DefaultGameObjectInjectionWorld?.GetOrCreateSystemManaged<BulldozeToolSystem>();
             m_RenderingSystem = World.DefaultGameObjectInjectionWorld?.GetOrCreateSystemManaged<RenderingSystem>();
             m_PrefabSystem = World.DefaultGameObjectInjectionWorld?.GetOrCreateSystemManaged<PrefabSystem>();
+            m_ObjectToolSystem = World.DefaultGameObjectInjectionWorld?.GetOrCreateSystemManaged<ObjectToolSystem>();
             m_NetToolSystem = World.DefaultGameObjectInjectionWorld?.GetOrCreateSystemManaged<NetToolSystem>();
             ToolSystem toolSystem = m_ToolSystem; // I don't know why vanilla game did this.
             m_ToolSystem.EventToolChanged = (Action<ToolBaseSystem>)Delegate.Combine(toolSystem.EventToolChanged, new Action<ToolBaseSystem>(OnToolChanged));
@@ -383,14 +385,23 @@ namespace Better_Bulldozer.Systems
             else
             {
                 this.Enabled = true;
-                if (m_LastTool == m_NetToolSystem.toolID && m_NetToolSystem.GetPrefab() != null)
+
+                if (m_LastTool == m_NetToolSystem.toolID && m_NetToolSystem.GetPrefab() != null && m_PrefabSystem.TryGetEntity(m_NetToolSystem.GetPrefab(), out Entity prefabEntity))
                 {
-                    if (m_PrefabSystem.TryGetEntity(m_NetToolSystem.GetPrefab(), out Entity prefabEntity))
+                    if (EntityManager.HasComponent<MarkerNetData>(prefabEntity))
                     {
-                        if (EntityManager.HasComponent<MarkerNetData>(prefabEntity))
-                        {
-                            m_PrefabIsMarker = true;
-                        }
+                        m_PrefabIsMarker = true;
+                    }
+                    else
+                    {
+                        m_PrefabIsMarker = false;
+                    }
+                }
+                else if (m_LastTool == m_ObjectToolSystem.toolID && m_ObjectToolSystem.GetPrefab() != null)
+                {
+                    if (m_ObjectToolSystem.GetPrefab() is MarkerObjectPrefab)
+                    {
+                        m_PrefabIsMarker = true;
                     }
                     else
                     {
@@ -402,7 +413,7 @@ namespace Better_Bulldozer.Systems
                     m_PrefabIsMarker = false;
                 }
 
-                if (!m_PrefabIsMarker || m_LastTool != m_NetToolSystem.toolID)
+                if (!m_PrefabIsMarker)
                 {
                     m_RecordedShowMarkers = m_RenderingSystem.markersVisible;
                 }
