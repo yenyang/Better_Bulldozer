@@ -33,10 +33,10 @@ namespace Better_Bulldozer.Patches
                 toolRaycastSystem.netLayerMask = Layer.MarkerPathway | Layer.MarkerTaxiway;
                 toolRaycastSystem.raycastFlags = RaycastFlags.Markers | RaycastFlags.Decals;
             }
-            else if (betterBulldozerUISystem.SelectedRaycastTarget == BetterBulldozerUISystem.RaycastTarget.Surfaces)
+            else if (betterBulldozerUISystem.SelectedRaycastTarget == BetterBulldozerUISystem.RaycastTarget.Areas)
             {
                 toolRaycastSystem.typeMask = TypeMask.Areas;
-                toolRaycastSystem.areaTypeMask = AreaTypeMask.Surfaces | AreaTypeMask.Spaces;
+                toolRaycastSystem.areaTypeMask = betterBulldozerUISystem.AreasFilter;
                 toolRaycastSystem.raycastFlags |= RaycastFlags.SubElements;
             }
         }

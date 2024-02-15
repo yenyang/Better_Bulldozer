@@ -140,6 +140,9 @@
     <Content Include="UI\YYBB-bulldoze-tool-mode-row.html">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Content Include="UI\YYBB-Areas-Filters-row.html">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <ItemGroup>
     <AdditionalFiles Include="StyleCop\stylecop.json" />
