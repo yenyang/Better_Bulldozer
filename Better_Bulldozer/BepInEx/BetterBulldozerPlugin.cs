@@ -14,7 +14,7 @@ namespace Better_Bulldozer
     /// <summary>
     /// Mod entry point for BepInEx configuaration.
     /// </summary>
-    [BepInPlugin(MyPluginInfo.PLUGIN_GUID, "Better Bulldozer", "1.0.0")]
+    [BepInPlugin(MyPluginInfo.PLUGIN_GUID, "Better Bulldozer", "1.0.1")]
     [HarmonyPatch]
     public class BetterBulldozerPlugin : BaseUnityPlugin
     {
