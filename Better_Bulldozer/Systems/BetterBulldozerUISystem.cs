@@ -12,6 +12,7 @@ namespace Better_Bulldozer.Systems
     using cohtml.Net;
     using Colossal.Entities;
     using Colossal.Logging;
+    using Game.Areas;
     using Game.Prefabs;
     using Game.Rendering;
     using Game.SceneFlow;
@@ -43,6 +44,8 @@ namespace Better_Bulldozer.Systems
         private bool m_FirstTimeLoadingJS = true;
         private bool m_DelayOneFrameForAnarchy = true;
         private NetToolSystem m_NetToolSystem;
+        private AreaTypeMask m_AreasFilter = AreaTypeMask.Surfaces;
+        private string m_AreasFiltersRowScript = string.Empty;
 
         /// <summary>
         /// An enum to handle different raycast target options.
@@ -57,7 +60,7 @@ namespace Better_Bulldozer.Systems
             /// <summary>
             /// Exclusively target surfaces and spaces
             /// </summary>
-            Surfaces,
+            Areas,
 
             /// <summary>
             /// Exclusively target markers.
@@ -66,10 +69,14 @@ namespace Better_Bulldozer.Systems
         }
 
         /// <summary>
-        /// Gets a value indicating whether to raycast surfaces.
+        /// Gets a value indicating what to raycast.
         /// </summary>
         public RaycastTarget SelectedRaycastTarget { get => m_RaycastTarget; }
 
+        /// <summary>
+        /// Gets a value indicating the filter to apply to areas.
+        /// </summary>
+        public AreaTypeMask AreasFilter { get => m_AreasFilter; }
 
         /// <inheritdoc/>
         protected override void OnCreate()
@@ -87,6 +94,8 @@ namespace Better_Bulldozer.Systems
 
             m_InjectedJS = UIFileUtils.ReadJS(Path.Combine(UIFileUtils.AssemblyPath, "ui.js"));
             m_BulldozeToolItemScript = UIFileUtils.ReadHTML(Path.Combine(UIFileUtils.AssemblyPath, "YYBB-bulldoze-tool-mode-row.html"), "if (document.getElementById(\"YYA-bulldoze-tool-mode-item\") == null && document.getElementById(\"YYBB-bulldoze-tool-mode-item\") == null) { yyBetterBulldozer.div.className = \"item_bZY\"; yyBetterBulldozer.div.id = \"YYBB-bulldoze-tool-mode-item\"; yyBetterBulldozer.entities = document.getElementsByClassName(\"tool-options-panel_Se6\"); if (yyBetterBulldozer.entities[0] != null) { yyBetterBulldozer.entities[0].insertAdjacentElement('afterbegin', yyBetterBulldozer.div); } }");
+            m_AreasFiltersRowScript = UIFileUtils.ReadHTML(Path.Combine(UIFileUtils.AssemblyPath, "YYBB-Areas-Filters-row.html"), "if (document.getElementById(\"YYBB-area-filters-item\") == null) { yyBetterBulldozer.div.className = \"item_bZY\"; yyBetterBulldozer.div.id = \"YYBB-area-filters-item\"; yyBetterBulldozer.toolModeItem = document.getElementById(\"YYBB-bulldoze-tool-mode-item\"); if (yyBetterBulldozer.toolModeItem) { yyBetterBulldozer.toolModeItem.insertAdjacentElement('beforebegin', yyBetterBulldozer.div); } }");
+
 
             if (m_UiView == null)
             {
@@ -133,6 +142,14 @@ namespace Better_Bulldozer.Systems
                     m_BulldozeToolItemScript = UIFileUtils.ReadHTML(Path.Combine(UIFileUtils.AssemblyPath, "YYBB-bulldoze-tool-mode-row.html"), "if (document.getElementById(\"YYA-bulldoze-tool-mode-item\") == null && document.getElementById(\"YYBB-bulldoze-tool-mode-item\") == null) { yyBetterBulldozer.div.className = \"item_bZY\"; yyBetterBulldozer.div.id = \"YYBB-bulldoze-tool-mode-item\"; yyBetterBulldozer.entities = document.getElementsByClassName(\"tool-options-panel_Se6\"); if (yyBetterBulldozer.entities[0] != null) { yyBetterBulldozer.entities[0].insertAdjacentElement('afterbegin', yyBetterBulldozer.div); } }");
                 }
 
+                // This unregisters the events.
+                foreach (BoundEventHandle eventHandle in m_BoundEventHandles)
+                {
+                    m_UiView.UnregisterFromEvent(eventHandle);
+                }
+
+                m_BoundEventHandles.Clear();
+
                 // This script creates the bulldozer tool mode row and sets up the buttons.
                 UIFileUtils.ExecuteScript(m_UiView, m_BulldozeToolItemScript);
 
@@ -151,14 +168,23 @@ namespace Better_Bulldozer.Systems
                 UIFileUtils.ExecuteScript(m_UiView, $"if (typeof yyBetterBulldozer.setupButton == 'function') yyBetterBulldozer.setupButton(\"YYBB-Bypass-Confirmation-Button\", {BoolToString(m_BulldozeToolSystem.debugBypassBulldozeConfirmation)}, \"BypassConfirmationButton\")");
                 UIFileUtils.ExecuteScript(m_UiView, $"if (typeof yyBetterBulldozer.setupButton == 'function') yyBetterBulldozer.setupButton(\"YYBB-Gameplay-Manipulation-Button\", {BoolToString(m_BulldozeToolSystem.allowManipulation)}, \"GameplayManipulationButton\")");
                 UIFileUtils.ExecuteScript(m_UiView, $"if (typeof yyBetterBulldozer.setupButton == 'function') yyBetterBulldozer.setupButton(\"YYBB-Raycast-Markers-Button\", {IsRaycastTargetSelected(RaycastTarget.Markers)}, \"RaycastMarkersButton\")");
-                UIFileUtils.ExecuteScript(m_UiView, $"if (typeof yyBetterBulldozer.setupButton == 'function') yyBetterBulldozer.setupButton(\"YYBB-Raycast-Surfaces-Button\", {IsRaycastTargetSelected(RaycastTarget.Surfaces)}, \"RaycastSurfacesButton\")");
+                UIFileUtils.ExecuteScript(m_UiView, $"if (typeof yyBetterBulldozer.setupButton == 'function') yyBetterBulldozer.setupButton(\"YYBB-Raycast-Areas-Button\", {IsRaycastTargetSelected(RaycastTarget.Areas)}, \"RaycastAreasButton\")");
+
+                if (m_RaycastTarget == RaycastTarget.Areas)
+                {
+                    UIFileUtils.ExecuteScript(m_UiView, m_AreasFiltersRowScript);
+                    UIFileUtils.ExecuteScript(m_UiView, "yyBetterBulldozer.areaFilterLabel = document.getElementById(\"YYBB-areas-filter-label\"); if (yyBetterBulldozer.areaFilterLabel) yyBetterBulldozer.areaFilterLabel.innerHTML = engine.translate(yyBetterBulldozer.areaFilterLabel.getAttribute(\"localeKey\"));");
+                    UIFileUtils.ExecuteScript(m_UiView, $"if (typeof yyBetterBulldozer.setupButton == 'function') yyBetterBulldozer.setupButton(\"YYBB-Surfaces-Filter-Button\", {IsAreaFilterSelected(AreaTypeMask.Surfaces)}, \"SurfacesFilterButton\")");
+                    UIFileUtils.ExecuteScript(m_UiView, $"if (typeof yyBetterBulldozer.setupButton == 'function') yyBetterBulldozer.setupButton(\"YYBB-Spaces-Filter-Button\", {IsAreaFilterSelected(AreaTypeMask.Spaces)}, \"SpacesFilterButton\")");
+                    m_BoundEventHandles.Add(m_UiView.RegisterForEvent("YYBB-Surfaces-Filter-Button", (Action<bool>)SurfacesFilterToggled));
+                    m_BoundEventHandles.Add(m_UiView.RegisterForEvent("YYBB-Spaces-Filter-Button", (Action<bool>)SpacesFilterToggled));
+                }
 
                 m_BoundEventHandles.Add(m_UiView.RegisterForEvent("YYBB-Bypass-Confirmation-Button", (Action<bool>)BypassConfirmationToggled));
                 m_BoundEventHandles.Add(m_UiView.RegisterForEvent("YYBB-Gameplay-Manipulation-Button", (Action<bool>)GameplayManipulationToggled));
                 m_BoundEventHandles.Add(m_UiView.RegisterForEvent("YYBB-Raycast-Markers-Button", (Action<bool>)RaycastMarkersButtonToggled));
-                m_BoundEventHandles.Add(m_UiView.RegisterForEvent("YYBB-Raycast-Surfaces-Button", (Action<bool>)RaycastSurfacesButtonToggled));
-                m_BoundEventHandles.Add(m_UiView.RegisterForEvent("CheckForElement-YYBB-bulldoze-tool-mode-item", (Action<bool>)ElementCheck));
-
+                m_BoundEventHandles.Add(m_UiView.RegisterForEvent("YYBB-Raycast-Areas-Button", (Action<bool>)RaycastAreasButtonToggled));
+                m_BoundEventHandles.Add(m_UiView.RegisterForEvent("CheckForElement", (Action<bool>)ElementCheck));
 
                 m_BulldozeItemShown = true;
                 m_DelayOneFrameForAnarchy = true;
@@ -166,7 +192,16 @@ namespace Better_Bulldozer.Systems
             else
             {
                 // This script checks if bulldoze tool mode item exists. If it doesn't it triggers bulldoze tool mode being recreated.
-                UIFileUtils.ExecuteScript(m_UiView, $"if (document.getElementById(\"YYBB-bulldoze-tool-mode-item\") == null) engine.trigger('CheckForElement-YYBB-bulldoze-tool-mode-item', false);");
+                UIFileUtils.ExecuteScript(m_UiView, $"if (document.getElementById(\"YYBB-bulldoze-tool-mode-item\") == null) engine.trigger('CheckForElement', false);");
+
+                if (m_RaycastTarget == RaycastTarget.Areas)
+                {
+                    UIFileUtils.ExecuteScript(m_UiView, $"if (document.getElementById(\"YYBB-areas-filter-label\") == null) engine.trigger('CheckForElement', false);");
+                }
+                else
+                {
+                    UIFileUtils.ExecuteScript(m_UiView, $"if (document.getElementById(\"YYBB-areas-filter-label\") != null) engine.trigger('CheckForElement', false);");
+                }
 
                 if (m_LastBypassConfrimation != m_BulldozeToolSystem.debugBypassBulldozeConfirmation)
                 {
@@ -255,6 +290,16 @@ namespace Better_Bulldozer.Systems
             return "false";
         }
 
+        private string IsAreaFilterSelected(AreaTypeMask areaTypeMask)
+        {
+            if ((m_AreasFilter & areaTypeMask) == areaTypeMask)
+            {
+                return "true";
+            }
+
+            return "false";
+        }
+
         /// <summary>
         /// C# event handler for event callback from UI JavaScript. Toggles the bypassConfirmation field of the bulldozer system.
         /// </summary>
@@ -284,7 +329,7 @@ namespace Better_Bulldozer.Systems
             if (flag)
             {
                 m_RaycastTarget = RaycastTarget.Markers;
-                m_UiView.ExecuteScript($"yyBetterBulldozer.buttonElement = document.getElementById(\"YYBB-Raycast-Surfaces-Button\"); if (yyBetterBulldozer.buttonElement != null) yyBetterBulldozer.buttonElement.classList.remove(\"selected\");");
+                m_UiView.ExecuteScript($"yyBetterBulldozer.buttonElement = document.getElementById(\"YYBB-Raycast-Areas-Button\"); if (yyBetterBulldozer.buttonElement != null) yyBetterBulldozer.buttonElement.classList.remove(\"selected\");");
             }
             else
             {
@@ -294,14 +339,50 @@ namespace Better_Bulldozer.Systems
         }
 
         /// <summary>
-        /// C# event handler for event callback from UI JavaScript. Toggles the m_RaycastSurfaces.
+        /// C# event handler for event callback from UI JavaScript. For filtering for surfaces.
         /// </summary>
         /// <param name="flag">A bool for what to set the field to.</param>
-        private void RaycastSurfacesButtonToggled(bool flag)
+        private void SurfacesFilterToggled(bool flag)
         {
             if (flag)
             {
-                m_RaycastTarget = RaycastTarget.Surfaces;
+                m_AreasFilter = AreaTypeMask.Surfaces;
+                m_UiView.ExecuteScript($"yyBetterBulldozer.buttonElement = document.getElementById(\"YYBB-Spaces-Filter-Button\"); if (yyBetterBulldozer.buttonElement != null) yyBetterBulldozer.buttonElement.classList.remove(\"selected\");");
+            }
+            else
+            {
+                m_AreasFilter = AreaTypeMask.Spaces;
+                m_UiView.ExecuteScript($"yyBetterBulldozer.buttonElement = document.getElementById(\"YYBB-Spaces-Filter-Button\"); if (yyBetterBulldozer.buttonElement != null) yyBetterBulldozer.buttonElement.classList.add(\"selected\");");
+            }
+        }
+
+        /// <summary>
+        /// C# event handler for event callback from UI JavaScript. For filtering for surfaces.
+        /// </summary>
+        /// <param name="flag">A bool for what to set the field to.</param>
+        private void SpacesFilterToggled(bool flag)
+        {
+            if (flag)
+            {
+                m_AreasFilter = AreaTypeMask.Spaces;
+                m_UiView.ExecuteScript($"yyBetterBulldozer.buttonElement = document.getElementById(\"YYBB-Surfaces-Filter-Button\"); if (yyBetterBulldozer.buttonElement != null) yyBetterBulldozer.buttonElement.classList.remove(\"selected\");");
+            }
+            else
+            {
+                m_AreasFilter = AreaTypeMask.Surfaces;
+                m_UiView.ExecuteScript($"yyBetterBulldozer.buttonElement = document.getElementById(\"YYBB-Surfaces-Filter-Button\"); if (yyBetterBulldozer.buttonElement != null) yyBetterBulldozer.buttonElement.classList.add(\"selected\");");
+            }
+        }
+
+        /// <summary>
+        /// C# event handler for event callback from UI JavaScript. Toggles the m_RaycastAreas.
+        /// </summary>
+        /// <param name="flag">A bool for what to set the field to.</param>
+        private void RaycastAreasButtonToggled(bool flag)
+        {
+            if (flag)
+            {
+                m_RaycastTarget = RaycastTarget.Areas;
                 m_UiView.ExecuteScript($"yyBetterBulldozer.buttonElement = document.getElementById(\"YYBB-Raycast-Markers-Button\"); if (yyBetterBulldozer.buttonElement != null) yyBetterBulldozer.buttonElement.classList.remove(\"selected\");");
                 m_RenderingSystem.markersVisible = m_RecordedShowMarkers;
             }
@@ -329,6 +410,9 @@ namespace Better_Bulldozer.Systems
 
             // This script destroys the bulldoze tool mode row if it exists.
             UIFileUtils.ExecuteScript(m_UiView, DestroyElementByID("YYBB-bulldoze-tool-mode-item"));
+
+            // This script destroys the area filters mode row if it exists.
+            UIFileUtils.ExecuteScript(m_UiView, DestroyElementByID("YYBB-area-filters-item"));
 
             // This unregisters the events.
             foreach (BoundEventHandle eventHandle in m_BoundEventHandles)

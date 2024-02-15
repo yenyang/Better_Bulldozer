@@ -77,8 +77,10 @@ if (typeof yyBetterBulldozer.applyLocalization !== 'function') {
 if (typeof yyBetterBulldozer.setTooltip !== 'function') {
     yyBetterBulldozer.setTooltip = function (id, toolTipKey) {
         let target = document.getElementById(id);
-        target.onmouseenter = () => yyBetterBulldozer.showTooltip(document.getElementById(id), toolTipKey);
-        target.onmouseleave = yyBetterBulldozer.hideTooltip;
+        if (target) {
+            target.onmouseenter = () => yyBetterBulldozer.showTooltip(document.getElementById(id), toolTipKey);
+            target.onmouseleave = yyBetterBulldozer.hideTooltip;
+        }
     }
 }
 
