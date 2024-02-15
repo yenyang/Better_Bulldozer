@@ -196,11 +196,11 @@ namespace Better_Bulldozer.Systems
 
                 if (m_RaycastTarget == RaycastTarget.Areas)
                 {
-                    UIFileUtils.ExecuteScript(m_UiView, $"if (document.getElementById(\"YYBB-areas-filter-label\") == null) engine.trigger('CheckForElement', false);");
+                    UIFileUtils.ExecuteScript(m_UiView, $"if (document.getElementById(\"YYBB-area-filters-item\") == null) engine.trigger('CheckForElement', false);");
                 }
                 else
                 {
-                    UIFileUtils.ExecuteScript(m_UiView, $"if (document.getElementById(\"YYBB-areas-filter-label\") != null) engine.trigger('CheckForElement', false);");
+                    UIFileUtils.ExecuteScript(m_UiView, DestroyElementByID("YYBB-area-filters-item"));
                 }
 
                 if (m_LastBypassConfrimation != m_BulldozeToolSystem.debugBypassBulldozeConfirmation)
