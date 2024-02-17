@@ -10,9 +10,9 @@ namespace Better_Bulldozer.Systems
     using System.IO;
     using Anarchy.Utils;
     using cohtml.Net;
-    using Colossal.Entities;
     using Colossal.Logging;
     using Game.Areas;
+    using Game.Common;
     using Game.Prefabs;
     using Game.Rendering;
     using Game.SceneFlow;
@@ -45,7 +45,9 @@ namespace Better_Bulldozer.Systems
         private bool m_DelayOneFrameForAnarchy = true;
         private NetToolSystem m_NetToolSystem;
         private AreaTypeMask m_AreasFilter = AreaTypeMask.Surfaces;
+        private TypeMask m_MarkersFilter = TypeMask.Net;
         private string m_AreasFiltersRowScript = string.Empty;
+        private string m_MarkersFiltersRowScript = string.Empty;
         private ObjectToolSystem m_ObjectToolSystem;
 
         /// <summary>
@@ -79,6 +81,11 @@ namespace Better_Bulldozer.Systems
         /// </summary>
         public AreaTypeMask AreasFilter { get => m_AreasFilter; }
 
+        /// <summary>
+        /// Gets a value indicating the filter to apply to Markers.
+        /// </summary>
+        public TypeMask MarkersFilter { get => m_MarkersFilter; }
+
         /// <inheritdoc/>
         protected override void OnCreate()
         {
@@ -97,6 +104,7 @@ namespace Better_Bulldozer.Systems
             m_InjectedJS = UIFileUtils.ReadJS(Path.Combine(UIFileUtils.AssemblyPath, "ui.js"));
             m_BulldozeToolItemScript = UIFileUtils.ReadHTML(Path.Combine(UIFileUtils.AssemblyPath, "YYBB-bulldoze-tool-mode-row.html"), "if (document.getElementById(\"YYA-bulldoze-tool-mode-item\") == null && document.getElementById(\"YYBB-bulldoze-tool-mode-item\") == null) { yyBetterBulldozer.div.className = \"item_bZY\"; yyBetterBulldozer.div.id = \"YYBB-bulldoze-tool-mode-item\"; yyBetterBulldozer.entities = document.getElementsByClassName(\"tool-options-panel_Se6\"); if (yyBetterBulldozer.entities[0] != null) { yyBetterBulldozer.entities[0].insertAdjacentElement('afterbegin', yyBetterBulldozer.div); } }");
             m_AreasFiltersRowScript = UIFileUtils.ReadHTML(Path.Combine(UIFileUtils.AssemblyPath, "YYBB-Areas-Filters-row.html"), "if (document.getElementById(\"YYBB-area-filters-item\") == null) { yyBetterBulldozer.div.className = \"item_bZY\"; yyBetterBulldozer.div.id = \"YYBB-area-filters-item\"; yyBetterBulldozer.toolModeItem = document.getElementById(\"YYBB-bulldoze-tool-mode-item\"); if (yyBetterBulldozer.toolModeItem) { yyBetterBulldozer.toolModeItem.insertAdjacentElement('beforebegin', yyBetterBulldozer.div); } }");
+            m_MarkersFiltersRowScript = UIFileUtils.ReadHTML(Path.Combine(UIFileUtils.AssemblyPath, "YYBB-Markers-Filters-row.html"), "if (document.getElementById(\"YYBB-markers-filters-item\") == null) { yyBetterBulldozer.div.className = \"item_bZY\"; yyBetterBulldozer.div.id = \"YYBB-markers-filters-item\"; yyBetterBulldozer.toolModeItem = document.getElementById(\"YYBB-bulldoze-tool-mode-item\"); if (yyBetterBulldozer.toolModeItem) { yyBetterBulldozer.toolModeItem.insertAdjacentElement('beforebegin', yyBetterBulldozer.div); } }");
 
 
             if (m_UiView == null)
@@ -182,6 +190,16 @@ namespace Better_Bulldozer.Systems
                     m_BoundEventHandles.Add(m_UiView.RegisterForEvent("YYBB-Spaces-Filter-Button", (Action<bool>)SpacesFilterToggled));
                 }
 
+                if (m_RaycastTarget == RaycastTarget.Markers)
+                {
+                    UIFileUtils.ExecuteScript(m_UiView, m_MarkersFiltersRowScript);
+                    UIFileUtils.ExecuteScript(m_UiView, "yyBetterBulldozer.markersFilterLabel = document.getElementById(\"YYBB-markers-filter-label\"); if (yyBetterBulldozer.markersFilterLabel) yyBetterBulldozer.markersFilterLabel.innerHTML = engine.translate(yyBetterBulldozer.markersFilterLabel.getAttribute(\"localeKey\"));");
+                    UIFileUtils.ExecuteScript(m_UiView, $"if (typeof yyBetterBulldozer.setupButton == 'function') yyBetterBulldozer.setupButton(\"YYBB-StaticObject-Filter-Button\", {IsMarkersFilterSelected(TypeMask.StaticObjects)}, \"StaticObjectsFilterButton\")");
+                    UIFileUtils.ExecuteScript(m_UiView, $"if (typeof yyBetterBulldozer.setupButton == 'function') yyBetterBulldozer.setupButton(\"YYBB-Networks-Filter-Button\", {IsMarkersFilterSelected(TypeMask.Net)}, \"NetworksFilterButton\")");
+                    m_BoundEventHandles.Add(m_UiView.RegisterForEvent("YYBB-StaticObject-Filter-Button", (Action<bool>)StaticObjectsFilterToggled));
+                    m_BoundEventHandles.Add(m_UiView.RegisterForEvent("YYBB-Networks-Filter-Button", (Action<bool>)NetworksFilterToggled));
+                }
+
                 m_BoundEventHandles.Add(m_UiView.RegisterForEvent("YYBB-Bypass-Confirmation-Button", (Action<bool>)BypassConfirmationToggled));
                 m_BoundEventHandles.Add(m_UiView.RegisterForEvent("YYBB-Gameplay-Manipulation-Button", (Action<bool>)GameplayManipulationToggled));
                 m_BoundEventHandles.Add(m_UiView.RegisterForEvent("YYBB-Raycast-Markers-Button", (Action<bool>)RaycastMarkersButtonToggled));
@@ -203,6 +221,15 @@ namespace Better_Bulldozer.Systems
                 else
                 {
                     UIFileUtils.ExecuteScript(m_UiView, DestroyElementByID("YYBB-area-filters-item"));
+                }
+
+                if (m_RaycastTarget == RaycastTarget.Markers)
+                {
+                    UIFileUtils.ExecuteScript(m_UiView, $"if (document.getElementById(\"YYBB-markers-filters-item\") == null) engine.trigger('CheckForElement', false);");
+                }
+                else
+                {
+                    UIFileUtils.ExecuteScript(m_UiView, DestroyElementByID("YYBB-markers-filters-item"));
                 }
 
                 if (m_LastBypassConfrimation != m_BulldozeToolSystem.debugBypassBulldozeConfirmation)
@@ -302,6 +329,16 @@ namespace Better_Bulldozer.Systems
             return "false";
         }
 
+        private string IsMarkersFilterSelected(TypeMask typeMask)
+        {
+            if ((m_MarkersFilter & typeMask) == typeMask)
+            {
+                return "true";
+            }
+
+            return "false";
+        }
+
         /// <summary>
         /// C# event handler for event callback from UI JavaScript. Toggles the bypassConfirmation field of the bulldozer system.
         /// </summary>
@@ -359,7 +396,7 @@ namespace Better_Bulldozer.Systems
         }
 
         /// <summary>
-        /// C# event handler for event callback from UI JavaScript. For filtering for surfaces.
+        /// C# event handler for event callback from UI JavaScript. For filtering for spaces.
         /// </summary>
         /// <param name="flag">A bool for what to set the field to.</param>
         private void SpacesFilterToggled(bool flag)
@@ -373,6 +410,42 @@ namespace Better_Bulldozer.Systems
             {
                 m_AreasFilter = AreaTypeMask.Surfaces;
                 m_UiView.ExecuteScript($"yyBetterBulldozer.buttonElement = document.getElementById(\"YYBB-Surfaces-Filter-Button\"); if (yyBetterBulldozer.buttonElement != null) yyBetterBulldozer.buttonElement.classList.add(\"selected\");");
+            }
+        }
+
+        /// <summary>
+        /// C# event handler for event callback from UI JavaScript. For filtering for static objects.
+        /// </summary>
+        /// <param name="flag">A bool for what to set the field to.</param>
+        private void StaticObjectsFilterToggled(bool flag)
+        {
+            if (flag)
+            {
+                m_MarkersFilter = TypeMask.StaticObjects;
+                m_UiView.ExecuteScript($"yyBetterBulldozer.buttonElement = document.getElementById(\"YYBB-Networks-Filter-Button\"); if (yyBetterBulldozer.buttonElement != null) yyBetterBulldozer.buttonElement.classList.remove(\"selected\");");
+            }
+            else
+            {
+                m_MarkersFilter = TypeMask.Net;
+                m_UiView.ExecuteScript($"yyBetterBulldozer.buttonElement = document.getElementById(\"YYBB-Networks-Filter-Button\"); if (yyBetterBulldozer.buttonElement != null) yyBetterBulldozer.buttonElement.classList.add(\"selected\");");
+            }
+        }
+
+        /// <summary>
+        /// C# event handler for event callback from UI JavaScript. For filtering for nets.
+        /// </summary>
+        /// <param name="flag">A bool for what to set the field to.</param>
+        private void NetworksFilterToggled(bool flag)
+        {
+            if (flag)
+            {
+                m_MarkersFilter = TypeMask.Net;
+                m_UiView.ExecuteScript($"yyBetterBulldozer.buttonElement = document.getElementById(\"YYBB-StaticObject-Filter-Button\"); if (yyBetterBulldozer.buttonElement != null) yyBetterBulldozer.buttonElement.classList.remove(\"selected\");");
+            }
+            else
+            {
+                m_MarkersFilter = TypeMask.StaticObjects;
+                m_UiView.ExecuteScript($"yyBetterBulldozer.buttonElement = document.getElementById(\"YYBB-StaticObject-Filter-Button\"); if (yyBetterBulldozer.buttonElement != null) yyBetterBulldozer.buttonElement.classList.add(\"selected\");");
             }
         }
 
@@ -415,6 +488,9 @@ namespace Better_Bulldozer.Systems
 
             // This script destroys the area filters mode row if it exists.
             UIFileUtils.ExecuteScript(m_UiView, DestroyElementByID("YYBB-area-filters-item"));
+
+            // This script destroys the area filters mode row if it exists.
+            UIFileUtils.ExecuteScript(m_UiView, DestroyElementByID("YYBB-markers-filters-item"));
 
             // This unregisters the events.
             foreach (BoundEventHandle eventHandle in m_BoundEventHandles)

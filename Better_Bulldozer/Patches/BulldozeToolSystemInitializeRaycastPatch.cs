@@ -29,9 +29,16 @@ namespace Better_Bulldozer.Patches
             RenderingSystem renderingSystem = World.DefaultGameObjectInjectionWorld?.GetOrCreateSystemManaged<RenderingSystem>();
             if (renderingSystem.markersVisible && betterBulldozerUISystem.SelectedRaycastTarget == BetterBulldozerUISystem.RaycastTarget.Markers)
             {
-                toolRaycastSystem.typeMask = TypeMask.Net | TypeMask.StaticObjects;
-                toolRaycastSystem.netLayerMask = Layer.MarkerPathway | Layer.MarkerTaxiway;
-                toolRaycastSystem.raycastFlags = RaycastFlags.Markers | RaycastFlags.Decals;
+                toolRaycastSystem.typeMask = betterBulldozerUISystem.MarkersFilter;
+                if ((betterBulldozerUISystem.MarkersFilter & TypeMask.Net) == TypeMask.Net)
+                {
+                    toolRaycastSystem.netLayerMask = Layer.MarkerPathway | Layer.MarkerTaxiway;
+                    toolRaycastSystem.raycastFlags = RaycastFlags.Markers;
+                }
+                else
+                {
+                    toolRaycastSystem.raycastFlags = RaycastFlags.Markers | RaycastFlags.Decals;
+                }
             }
             else if (betterBulldozerUISystem.SelectedRaycastTarget == BetterBulldozerUISystem.RaycastTarget.Areas)
             {

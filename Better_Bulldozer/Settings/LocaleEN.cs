@@ -38,6 +38,11 @@ namespace Better_Bulldozer.Settings
                 { "YY_BETTER_BULLDOZER_DESCRIPTION.SurfacesFilterButton", "With this enabled you will be able to target surfaces inside or outside of buildings so you can remove them in one click." },
                 { "YY_BETTER_BULLDOZER.SpacesFilterButton", "Spaces Filter" },
                 { "YY_BETTER_BULLDOZER_DESCRIPTION.SpacesFilterButton", "Spaces include: Walking, Park, and Hangout areas. They are not currently visible with this tool, but will be highlighted when hovered. With this enabled you can target them inside or outside buildings and remove with one click." },
+                { "YY_BETTER_BULLDOZER.StaticObjectsFilterButton", "Static Objects Filter" },
+                { "YY_BETTER_BULLDOZER_DESCRIPTION.StaticObjectsFilterButton", "For removing invisible parking decals, various spots, points, and spawners. Only those outside buildings can be removed. Trying to target those inside buildings will remove the building!" },
+                { "YY_BETTER_BULLDOZER.NetworksFilterButton", "Networks Filter" },
+                { "YY_BETTER_BULLDOZER_DESCRIPTION.NetworksFilterButton", "For removing invisible networks. Only those outside buildings can be removed. Trying to target those inside buildings will have no effect." },
+
             };
         }
 

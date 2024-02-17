@@ -137,6 +137,9 @@
     <Content Include="UI\ui.js">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Content Include="UI\YYBB-Markers-Filters-row.html">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="UI\YYBB-bulldoze-tool-mode-row.html">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
