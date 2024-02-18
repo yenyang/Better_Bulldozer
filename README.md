@@ -12,7 +12,7 @@ Sully made a video about custom car parks (aka Parking Lots) and this functional
 ## Detailed Descrption
 * Icons for game manipulation and bypass confirmation for bulldozer.
 * Icon to show and EXCLUSIVELY target invisible paths/markers with the bulldozer and remove invisible paths/markers. See below.
-* Icon to EXCLUSIVELY target surfaces and spaces with the bulldozer and remove with one click. Works both inside and outside of assets.
+* Icon to EXCLUSIVELY target surfaces and/or spaces with the bulldozer and remove with one click. Works both inside and outside of assets.
 
 ## Invisible Paths and Markers
 Drawing invisible paths and markers is an unsupported feature of the game. You need DevUI to access the 'Add Object' menu via the home button to draw invisible paths and markers, unless another mod makes this more convenient.
@@ -35,6 +35,6 @@ I will respond on the code modding channels on **Cities: Skylines Modding Discor
 * Sully - Testing, Feedback, and Promotional Material.
 * Algernon - Help with UI, Cooperative Development & Code Sharing
 * T.D.W., Klyte45, krzychu124, & Quboid - Cooperative Development & Code Sharing
-* Dante - Testing, Feedback
+* Dante, starrysum - Testing, Feedback
 
 This mod is not affiliated with any C:S1 mod with similar titles. 
