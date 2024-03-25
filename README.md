@@ -1,5 +1,7 @@
 # Better Bulldozer
-Easily delete things with bulldozer that you otherwise could not delete or easily delete.
+Deprecated. No Longer maintained or supported. Please see 
+
+Easily delete things with bulldozer that you otherwise could not delete or easily delete. Plase see https://github.com/yenyang/BetterBulldozer.
 
 These options used to be part of Anarchy but have been forked into this mod. This mod is intended to be used with Anarchy v1.3.0 or newer, however Anarchy is not required.
 
